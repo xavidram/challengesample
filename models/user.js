@@ -26,7 +26,17 @@ const userSchema = new Schema({
       ref: "User",
     },
   ],
+}, {
+  // Apply a getter method to format the timestamp on query
+  toJSON: {
+    getters: true,
+  },
 });
+
+// Friend count virtual
+userSchema.virtual('friendCount').get(function() {
+  return this.friends.length ?? 0;
+})
 
 const User = model("user", userSchema);
 

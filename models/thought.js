@@ -1,11 +1,10 @@
-const { Schema, model } = require("mongoose");
-
+const { Schema, model, Types } = require("mongoose");
 // Create the Reaction schema (subdocument schema)
 const reactionSchema = new Schema(
   {
     reactionId: {
       type: Schema.Types.ObjectId,
-      default: () => new mongoose.Types.ObjectId(), // Default value is a new ObjectId
+      default: () => new Types.ObjectId(), // Default value is a new ObjectId
     },
     reactionBody: {
       type: String,
@@ -32,6 +31,16 @@ const reactionSchema = new Schema(
 // Schema to create Thought model
 const thoughtSchema = new Schema(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    username: {
+      type: String,
+      ref: "User",
+      required: true,
+    },
     thoughtText: {
       type: String,
       required: true,
@@ -41,11 +50,6 @@ const thoughtSchema = new Schema(
     createdAt: {
       type: Date,
       default: Date.now,
-    },
-    username: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
     },
     reactions: [reactionSchema],
   },

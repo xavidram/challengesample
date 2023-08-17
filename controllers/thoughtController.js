@@ -22,7 +22,7 @@ module.exports = {
   // Get a single thought
   getSingleThought: async (req, res) => {
     try {
-      const thought = await Thought.findOne({ _id: req.params.userId }).select(
+      const thought = await Thought.findOne({ _id: req.params.thoughtId }).select(
         "-__v"
       );
 
@@ -72,10 +72,39 @@ module.exports = {
       if (!thought) {
         res.status(404).json({ message: "No thought with that ID" });
       }
+
+      return res.json(thought);
     } catch (err) {
       res.status(500).json(err);
     }
   },
+
+  async deleteThought(req, res) {
+    try {
+      const thought = await Thought.findByIdAndDelete({ _id: req.params.thoughtId });
+
+      if (!thought) {
+        res.status(404).json({ message: "No thought with that ID" });
+      }
+
+      console.log(Object(thought.userId).valueOf())
+
+      const user = await User.findOneAndUpdate(
+        { _id: Object(thought.userId).valueOf() },
+        { $pull: { thoughts: { $in: [req.params.thoughtId]}} },
+        { runValidators: true, new: true }
+      );
+
+      if (!user) {
+        res.status(404).json({ message: "No user with that ID" });
+      }
+
+      return res.json(thought);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+
 
   //add reaction
   createReaction: async (req, res) => {

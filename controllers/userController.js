@@ -5,14 +5,8 @@ module.exports = {
   // Get all users
   async getUsers(req, res) {
     try {
-      const { username, email } = req.body;
-
-      if (!username || !email) {
-        return res.status(400).json({ message: "Username and email are required fields." });
-      }
-  
-      const user = await User.create(req.body);
-      res.json(user);
+      const users = await User.find()
+      res.json(users);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -55,6 +49,8 @@ module.exports = {
       if (!user) {
         res.status(404).json({ message: "No user with that ID" });
       }
+
+      return res.json(user);
     } catch (err) {
       res.status(500).json(err);
     }
@@ -72,6 +68,53 @@ module.exports = {
       if (!user) {
         res.status(404).json({ message: "No user with that ID" });
       }
+
+      return res.json(user);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+
+  async addFriend(req, res) {
+    try {
+      const friend = await User.findOne({ _id: req.params.friendId }).select(
+          "-__v"
+      );
+
+      if(!friend) {
+        res.status(404).json({ message: "Unable to find friend to add with that ID" });
+      }
+
+      const user = await User.findOneAndUpdate(
+          { _id: req.params.userId },
+          { $addToSet: { friends: req.params.friendId } },
+          { runValidators: true, new: true }
+      );
+
+      if(!user) {
+        res.status(404).json({ message: "No user with that ID" });
+      }
+
+      res.json(user);
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  },
+
+  async deleteFriend(req, res) {
+    try {
+      const user = await User.findOneAndUpdate(
+          { _id: req.params.userId },
+          { $pull: { friends: { $in: [req.params.friendId]}} },
+          { runValidators: true, new: true }
+      );
+
+      if (!user) {
+        res.status(404).json({ message: "No user with that ID" });
+      }
+
+      return res.json(user);
     } catch (err) {
       res.status(500).json(err);
     }
